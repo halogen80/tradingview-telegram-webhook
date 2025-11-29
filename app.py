@@ -12,9 +12,13 @@ def format_ticker_for_mexc(ticker):
     """
     TradingView ticker formatını MEXC formatına çevirir
     Örnek: BINANCE:XLMUSDT -> XLM_USDT
+    Örnek: XLM.P -> XLM
     """
     # Exchange prefix'ini kaldır (BINANCE:, MEXC:, vb.)
     ticker = ticker.split(':')[-1]
+    
+    # .P, .PS gibi ekleri temizle
+    ticker = ticker.replace('.P', '').replace('.PS', '')
     
     # USDT'yi ayır
     if 'USDT' in ticker:
