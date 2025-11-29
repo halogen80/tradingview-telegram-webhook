@@ -5,8 +5,11 @@ import re
 app = Flask(__name__)
 
 # Telegram Bot bilgileri
-TELEGRAM_BOT_TOKEN = "7103969863:AAHb8eDRKHmCsevIl2yYtu67AcrBuLaSPvo"
-TELEGRAM_CHAT_ID = "-4759460082"
+import os
+
+# Telegram Bot bilgileri
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = "-7103969863"
 
 def format_ticker_for_mexc(ticker):
     """
@@ -80,3 +83,4 @@ Momentum yükseldi - işlem girişi kontrol et!
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
+
