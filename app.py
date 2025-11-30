@@ -60,6 +60,19 @@ def webhook():
         change_percentage = data.get('change_percentage', 'N/A')
         interval = data.get('interval', 'N/A')
         
+        # HACİM FİLTRESİ - 100,000 altındaki sinyalleri reddet
+        try:
+            volume_value = float(str(volume).replace(',', ''))
+            if volume_value < 100000:
+                print(f"Sinyal reddedildi - Düşük hacim: {volume_value}")
+                return jsonify({
+                    "status": "filtered", 
+                    "message": f"Hacim çok düşük ({volume_value}), minimum 100,000 gerekli"
+                }), 200
+        except:
+            print(f"Hacim parse edilemedi: {volume}")
+            # Hacim parse edilemezse yine de devam et
+        
         # MEXC için ticker formatını düzenle
         mexc_ticker = format_ticker_for_mexc(ticker)
         
