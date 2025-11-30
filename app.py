@@ -82,6 +82,7 @@ def webhook():
             # CHOPPY KURALLARI:
             # 1. ATR çok yüksekse (>8%) = aşırı volatil, choppy
             # 2. Bar değişimi çok küçükse (<0.3%) = durgun, choppy
+            # 3. Toplam değişim çok küçükse (<0.5%) = anlamsız hareket
             
             if atr_ratio > 8:
                 print(f"Sinyal reddedildi - Aşırı volatil (ATR: {atr_ratio:.2f}%)")
@@ -97,7 +98,14 @@ def webhook():
                     "message": f"Çok choppy - Durgun hareket: {bar_change:.2f}%"
                 }), 200
             
-            print(f"✅ Sinyal geçerli - ATR: {atr_ratio:.2f}%, Bar: {bar_change:.2f}%")
+            if total_change < 0.5:
+                print(f"Sinyal reddedildi - Anlamsız değişim ({total_change:.2f}%)")
+                return jsonify({
+                    "status": "filtered",
+                    "message": f"Çok choppy - Anlamsız değişim: {total_change:.2f}%"
+                }), 200
+            
+            print(f"✅ Sinyal geçerli - ATR: {atr_ratio:.2f}%, Bar: {bar_change:.2f}%, Değişim: {total_change:.2f}%")
             
         except Exception as e:
             print(f"Choppy filtresi hatası: {e}")
