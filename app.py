@@ -41,6 +41,7 @@ def webhook():
     try:
         # TradingView'dan gelen veriyi al
         data = request.json
+        print(f"Received data: {data}")  # Debug log
         
         # Gerekli alanları çıkar
         ticker = data.get('ticker', 'N/A')
@@ -57,13 +58,37 @@ def webhook():
         mexc_ticker = format_ticker_for_mexc(ticker)
         
         # Değişim için emoji seç
-        change_emoji = "📈" if str(change).startswith('+') or float(str(change).replace('+','')) > 0 else "📉"
+        try:
+            change_value = float(str(change).replace('+','').replace('%',''))
+            change_emoji = "📈" if change_value > 0 else "📉"
+        except:
+            change_emoji = "📊"
+        
+        # Bar rengi ve yüzde değişim belirle (close vs open)
+        try:
+            close_value = float(str(close))
+            open_value = float(str(open_price))
+            bar_change_percent = ((close_value - open_value) / open_value) * 100
+            
+            if close_value > open_value:
+                bar_emoji = "🟢"
+                bar_text = f"Yeşil Bar (+{bar_change_percent:.2f}%)"
+            elif close_value < open_value:
+                bar_emoji = "🔴"
+                bar_text = f"Kırmızı Bar ({bar_change_percent:.2f}%)"
+            else:
+                bar_emoji = "⚪"
+                bar_text = "Nötr Bar (0.00%)"
+        except:
+            bar_emoji = "⚪"
+            bar_text = "Bar bilgisi yok"
         
         # Telegram mesajını oluştur
         message = f"""🔔 *{mexc_ticker} Sinyali*
 
 💰 Fiyat: ${close}
 {change_emoji} Değişim: {change} ({change_percentage})
+{bar_emoji} {bar_text}
 📊 Range: ${low} - ${high}
 📦 Hacim: {volume}
 ⏰ {interval}
@@ -84,11 +109,16 @@ def webhook():
         response = requests.post(telegram_url, json=payload)
         
         if response.status_code == 200:
+            print("Telegram'a başarıyla gönderildi!")  # Debug log
             return jsonify({"status": "success", "message": "Telegram'a gönderildi!"}), 200
         else:
+            print(f"Telegram hatası: {response.text}")  # Debug log
             return jsonify({"status": "error", "message": response.text}), 500
             
     except Exception as e:
+        print(f"HATA: {str(e)}")  # Debug log
+        import traceback
+        traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
