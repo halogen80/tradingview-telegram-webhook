@@ -76,11 +76,6 @@ def webhook():
             open_value = float(str(open_price))
             bar_change_percent = ((close_value - open_value) / open_value) * 100
             
-            # FİLTRE: Bar değişimi %1'den küçükse mesaj gönderme
-            if abs(bar_change_percent) < 1.0:
-                print(f"Filtre: Bar değişimi %{bar_change_percent:.2f} - %1'den küçük, mesaj gönderilmedi.")
-                return jsonify({"status": "filtered", "message": f"Bar değişimi %{bar_change_percent:.2f} - minimum %1 gerekli"}), 200
-            
             if close_value > open_value:
                 bar_emoji = "🟢"
                 bar_text = f"Yeşil Bar (+{bar_change_percent:.2f}%)"
@@ -93,7 +88,6 @@ def webhook():
         except:
             bar_emoji = "⚪"
             bar_text = "Bar bilgisi yok"
-            print("Uyarı: Bar değişimi hesaplanamadı, filtre atlanıyor.")
         
         # Telegram mesajını oluştur
         message = f"""🔔 *{mexc_ticker} Sinyali*
