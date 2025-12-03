@@ -60,57 +60,6 @@ def webhook():
         change_percentage = data.get('change_percentage', 'N/A')
         interval = data.get('interval', 'N/A')
         
-        # CHOPPY FİLTRESİ - Çok dalgalı/kararsız coinleri filtrele
-        try:
-            close_value = float(str(close))
-            open_value = float(str(open_price))
-            high_value = float(str(high))
-            low_value = float(str(low))
-            
-            # ATR Oranı: (High - Low) / Close
-            atr_ratio = ((high_value - low_value) / close_value) * 100
-            
-            # Bar değişim oranı: |Close - Open| / Open
-            bar_change = abs((close_value - open_value) / open_value) * 100
-            
-            # Toplam değişim yüzdesi
-            try:
-                total_change = abs(float(str(change_percentage).replace('%', '').replace('+', '')))
-            except:
-                total_change = 100  # Parse edilemezse geçir
-            
-            # CHOPPY KURALLARI:
-            # 1. ATR çok yüksekse (>8%) = aşırı volatil, choppy
-            # 2. Bar değişimi çok küçükse (<0.3%) = durgun, choppy
-            # 3. Toplam değişim çok küçükse (<0.5%) = anlamsız hareket
-            
-            if atr_ratio > 8:
-                print(f"Sinyal reddedildi - Aşırı volatil (ATR: {atr_ratio:.2f}%)")
-                return jsonify({
-                    "status": "filtered",
-                    "message": f"Çok choppy - ATR çok yüksek: {atr_ratio:.2f}%"
-                }), 200
-            
-            if bar_change < 0.3:
-                print(f"Sinyal reddedildi - Durgun hareket (Bar değişim: {bar_change:.2f}%)")
-                return jsonify({
-                    "status": "filtered",
-                    "message": f"Çok choppy - Durgun hareket: {bar_change:.2f}%"
-                }), 200
-            
-            if total_change < 0.5:
-                print(f"Sinyal reddedildi - Anlamsız değişim ({total_change:.2f}%)")
-                return jsonify({
-                    "status": "filtered",
-                    "message": f"Çok choppy - Anlamsız değişim: {total_change:.2f}%"
-                }), 200
-            
-            print(f"✅ Sinyal geçerli - ATR: {atr_ratio:.2f}%, Bar: {bar_change:.2f}%, Değişim: {total_change:.2f}%")
-            
-        except Exception as e:
-            print(f"Choppy filtresi hatası: {e}")
-            # Hata varsa devam et
-        
         # MEXC için ticker formatını düzenle
         mexc_ticker = format_ticker_for_mexc(ticker)
         
