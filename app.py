@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import requests
 import re
 import os
+import json
 
 app = Flask(__name__)
 
@@ -47,7 +48,6 @@ def webhook():
             data = request.json
         else:
             # Eğer JSON değilse, text olarak al ve parse et
-            import json
             data = json.loads(raw_data)
         
         print(f"Parsed data: {data}")  # Debug log
@@ -63,11 +63,15 @@ def webhook():
         change_percentage = data.get('change_percentage', 'N/A')
         interval = data.get('interval', 'N/A')
         
-        # TradingView plot değişkenleri (dinamik alarm mesajları için)
+        # Alarm tipi belirleme - EN ÖNCE TANIMLA
+        alert_type = data.get('alert_type', '')
+        
+        # Market Structure & Stop bilgileri
+        stop_level = data.get('stop_level', 'N/A')
+        
+        # TradingView plot değişkenleri
         plot_0 = data.get('plot_0', '')
         plot_1 = data.get('plot_1', '')
-        
-        # Eğer plot_0 varsa, bu özel bir BB Basis Cross alarmı
         custom_message = plot_0 if plot_0 else plot_1 if plot_1 else None
         
         # MEXC için ticker formatını düzenle
@@ -80,7 +84,7 @@ def webhook():
         except:
             change_emoji = "📊"
         
-        # Bar rengi ve yüzde değişim belirle (close vs open)
+        # Bar rengi ve yüzde değişim belirle
         try:
             close_value = float(str(close))
             open_value = float(str(open_price))
@@ -100,7 +104,6 @@ def webhook():
             bar_text = "Bar bilgisi yok"
         
         # Telegram mesajını oluştur
-        # Market Structure Shift alarmları için özel format
         if alert_type == 'mss_bullish':
             message = f"""🔵 *{mexc_ticker} - BULLISH MARKET SHIFT*
 
@@ -169,14 +172,14 @@ def webhook():
         response = requests.post(telegram_url, json=payload)
         
         if response.status_code == 200:
-            print("Telegram'a başarıyla gönderildi!")  # Debug log
+            print("Telegram'a başarıyla gönderildi!")
             return jsonify({"status": "success", "message": "Telegram'a gönderildi!"}), 200
         else:
-            print(f"Telegram hatası: {response.text}")  # Debug log
+            print(f"Telegram hatası: {response.text}")
             return jsonify({"status": "error", "message": response.text}), 500
             
     except Exception as e:
-        print(f"HATA: {str(e)}")  # Debug log
+        print(f"HATA: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
