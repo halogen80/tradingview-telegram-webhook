@@ -14,18 +14,13 @@ def format_ticker_for_mexc(ticker):
     """
     TradingView ticker formatını MEXC formatına çevirir
     Örnek: BINANCE:XLMUSDT -> XLM_USDT
-    Örnek: BERAUSDT -> BERA_USDT
-    Örnek: XLM.P -> XLM_USDT
+    Örnek: XLM.P -> XLM
     """
     # Exchange prefix'ini kaldır (BINANCE:, MEXC:, vb.)
     ticker = ticker.split(':')[-1]
     
     # .P, .PS gibi ekleri temizle
     ticker = ticker.replace('.P', '').replace('.PS', '')
-    
-    # Eğer zaten _ varsa, olduğu gibi bırak
-    if '_' in ticker:
-        return ticker
     
     # USDT'yi ayır
     if 'USDT' in ticker:
@@ -34,12 +29,6 @@ def format_ticker_for_mexc(ticker):
     elif 'BUSD' in ticker:
         base = ticker.replace('BUSD', '')
         return f"{base}_BUSD"
-    elif 'BTC' in ticker:
-        base = ticker.replace('BTC', '')
-        return f"{base}_BTC"
-    elif 'ETH' in ticker:
-        base = ticker.replace('ETH', '')
-        return f"{base}_ETH"
     else:
         # Diğer pair'ler için genel format
         return ticker
@@ -127,7 +116,8 @@ def webhook():
 🛑 Stop Loss: ${stop_level}
 ⏰ {interval}
 
-[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/tr-TR/futures/{mexc_ticker})"""
+📊 [TradingView'da Aç](https://www.tradingview.com/chart/?symbol={ticker})
+💹 [MEXC Futures'da Aç](https://www.mexc.com/en-TR/futures/{mexc_ticker})"""
         
         elif alert_type == 'mss_bearish':
             message = f"""🔴 *{mexc_ticker} - BEARISH MARKET SHIFT*
@@ -197,3 +187,4 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
+
