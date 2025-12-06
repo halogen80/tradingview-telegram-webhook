@@ -116,7 +116,7 @@ def webhook():
 🛑 Stop Loss: ${stop_level}
 ⏰ {interval}
 
-[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/en-TR/futures/{mexc_ticker})"""
+[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/tr-TR/futures/{mexc_ticker})"""
         
         elif alert_type == 'mss_bearish':
             message = f"""🔴 *{mexc_ticker} - BEARISH MARKET SHIFT*
@@ -130,7 +130,7 @@ def webhook():
 🛑 Stop Loss: ${stop_level}
 ⏰ {interval}
 
-[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/en-TR/futures/{mexc_ticker})"""
+[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/tr-TR/futures/{mexc_ticker})"""
         
         elif custom_message:
             # Diğer özel mesajlar (BB Cross vb.)
@@ -145,7 +145,7 @@ def webhook():
 📦 Hacim: {volume}
 ⏰ {interval}
 
-[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/en-TR/futures/{mexc_ticker})"""
+[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/tr-TR/futures/{mexc_ticker})"""
         
         else:
             # Normal alarm (BUY/SELL)
@@ -158,7 +158,7 @@ def webhook():
 📦 Hacim: {volume}
 ⏰ {interval}
 
-[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/en-TR/futures/{mexc_ticker})"""
+[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/tr-TR/futures/{mexc_ticker})"""
         
         # Telegram'a gönder
         telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
