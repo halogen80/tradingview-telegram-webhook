@@ -40,14 +40,17 @@ def home():
 def webhook():
     try:
         # TradingView'dan gelen veriyi al (Content-Type'a bakmadan)
+        raw_data = request.data.decode('utf-8')
+        print(f"Raw data received: {raw_data}")  # Debug - Ham veriyi göster
+        
         if request.is_json:
             data = request.json
         else:
             # Eğer JSON değilse, text olarak al ve parse et
             import json
-            data = json.loads(request.data.decode('utf-8'))
+            data = json.loads(raw_data)
         
-        print(f"Received data: {data}")  # Debug log
+        print(f"Parsed data: {data}")  # Debug log
         
         # Gerekli alanları çıkar
         ticker = data.get('ticker', 'N/A')
