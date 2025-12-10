@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 import requests
 import re
 import os
-import json
 
 app = Flask(__name__)
 
@@ -41,16 +40,14 @@ def home():
 def webhook():
     try:
         # TradingView'dan gelen veriyi al (Content-Type'a bakmadan)
-        raw_data = request.data.decode('utf-8')
-        print(f"Raw data received: {raw_data}")  # Debug - Ham veriyi göster
-        
         if request.is_json:
             data = request.json
         else:
             # Eğer JSON değilse, text olarak al ve parse et
-            data = json.loads(raw_data)
+            import json
+            data = json.loads(request.data.decode('utf-8'))
         
-        print(f"Parsed data: {data}")  # Debug log
+        print(f"Received data: {data}")  # Debug log
         
         # Gerekli alanları çıkar
         ticker = data.get('ticker', 'N/A')
@@ -63,17 +60,6 @@ def webhook():
         change_percentage = data.get('change_percentage', 'N/A')
         interval = data.get('interval', 'N/A')
         
-        # Alarm tipi belirleme - EN ÖNCE TANIMLA
-        alert_type = data.get('alert_type', '')
-        
-        # Market Structure & Stop bilgileri
-        stop_level = data.get('stop_level', 'N/A')
-        
-        # TradingView plot değişkenleri
-        plot_0 = data.get('plot_0', '')
-        plot_1 = data.get('plot_1', '')
-        custom_message = plot_0 if plot_0 else plot_1 if plot_1 else None
-        
         # MEXC için ticker formatını düzenle
         mexc_ticker = format_ticker_for_mexc(ticker)
         
@@ -84,7 +70,7 @@ def webhook():
         except:
             change_emoji = "📊"
         
-        # Bar rengi ve yüzde değişim belirle
+        # Bar rengi ve yüzde değişim belirle (close vs open)
         try:
             close_value = float(str(close))
             open_value = float(str(open_price))
@@ -104,40 +90,7 @@ def webhook():
             bar_text = "Bar bilgisi yok"
         
         # Telegram mesajını oluştur
-        if alert_type == 'mss_bullish':
-            message = f"""🔵 *{mexc_ticker} - BULLISH MARKET SHIFT*
-
-📈 Market Yapısı Yükselişe Döndü!
-
-💰 Fiyat: ${close}
-{change_emoji} Değişim: {change} ({change_percentage})
-{bar_emoji} {bar_text}
-📊 Range: ${low} - ${high}
-🛑 Stop Loss: ${stop_level}
-⏰ {interval}
-
-📊 [TradingView'da Aç](https://www.tradingview.com/chart/?symbol={ticker})
-💹 [MEXC Futures'da Aç](https://www.mexc.com/en-TR/futures/{mexc_ticker})"""
-        
-        elif alert_type == 'mss_bearish':
-            message = f"""🔴 *{mexc_ticker} - BEARISH MARKET SHIFT*
-
-📉 Market Yapısı Düşüşe Döndü!
-
-💰 Fiyat: ${close}
-{change_emoji} Değişim: {change} ({change_percentage})
-{bar_emoji} {bar_text}
-📊 Range: ${low} - ${high}
-🛑 Stop Loss: ${stop_level}
-⏰ {interval}
-
-[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/tr-TR/futures/{mexc_ticker})"""
-        
-        elif custom_message:
-            # Diğer özel mesajlar (BB Cross vb.)
-            message = f"""🔔 *{mexc_ticker} Sinyali*
-
-{custom_message}
+        message = f"""🔔 *{mexc_ticker} Sinyali*
 
 💰 Fiyat: ${close}
 {change_emoji} Değişim: {change} ({change_percentage})
@@ -146,20 +99,9 @@ def webhook():
 📦 Hacim: {volume}
 ⏰ {interval}
 
-[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/tr-TR/futures/{mexc_ticker})"""
-        
-        else:
-            # Normal alarm (BUY/SELL)
-            message = f"""🔔 *{mexc_ticker} Sinyali*
+⚠️ *Momentum yükseldi - işlem girişi kontrol et!*
 
-💰 Fiyat: ${close}
-{change_emoji} Değişim: {change} ({change_percentage})
-{bar_emoji} {bar_text}
-📊 Range: ${low} - ${high}
-📦 Hacim: {volume}
-⏰ {interval}
-
-[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/tr-TR/futures/{mexc_ticker})"""
+[📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/en-TR/futures/{mexc_ticker})"""
         
         # Telegram'a gönder
         telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -173,18 +115,17 @@ def webhook():
         response = requests.post(telegram_url, json=payload)
         
         if response.status_code == 200:
-            print("Telegram'a başarıyla gönderildi!")
+            print("Telegram'a başarıyla gönderildi!")  # Debug log
             return jsonify({"status": "success", "message": "Telegram'a gönderildi!"}), 200
         else:
-            print(f"Telegram hatası: {response.text}")
+            print(f"Telegram hatası: {response.text}")  # Debug log
             return jsonify({"status": "error", "message": response.text}), 500
             
     except Exception as e:
-        print(f"HATA: {str(e)}")
+        print(f"HATA: {str(e)}")  # Debug log
         import traceback
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
-
