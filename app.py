@@ -99,7 +99,7 @@ def webhook():
 📦 Hacim: {volume}
 ⏰ {interval}
 
-⚠️ *⬆️ FILTERED CROSSOVER UP! OR ⬇️ FILTERED CROSSOVER DOWN!*
+⚠️ *⬆️ SQUEEZE FIRING !!!!*
 
 [📊 TradingView](https://www.tradingview.com/chart/?symbol={ticker}) | [💹 MEXC Futures](https://www.mexc.com/en-TR/futures/{mexc_ticker})"""
         
@@ -129,4 +129,5 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
+
 
