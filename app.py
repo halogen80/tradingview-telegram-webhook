@@ -157,10 +157,29 @@ def home():
 def webhook():
     """Ana webhook - otomatik indikatör tipini algılar"""
     try:
+        # Veri kontrolü ve parse
+        raw_data = request.data.decode('utf-8')
+        
+        # Boş veri kontrolü
+        if not raw_data or raw_data.strip() == '':
+            print("[WARNING] Empty request body received")
+            return jsonify({
+                "status": "error", 
+                "message": "Empty request body"
+            }), 400
+        
+        # JSON parse
         if request.is_json:
             data = request.json
         else:
-            data = json.loads(request.data.decode('utf-8'))
+            try:
+                data = json.loads(raw_data)
+            except json.JSONDecodeError as e:
+                print(f"[JSON ERROR] Invalid JSON: {raw_data[:100]}")
+                return jsonify({
+                    "status": "error", 
+                    "message": f"Invalid JSON format: {str(e)}"
+                }), 400
         
         print(f"[WEBHOOK] Received data: {data}")
         
@@ -200,10 +219,27 @@ def webhook():
 def pcd_geih_webhook():
     """PCD + GEIH indikatörü için özel endpoint (SADECE CONFIRMED sinyalleri)"""
     try:
+        # Veri kontrolü ve parse
+        raw_data = request.data.decode('utf-8')
+        
+        if not raw_data or raw_data.strip() == '':
+            print("[PCD-GEIH WARNING] Empty request body")
+            return jsonify({
+                "status": "error", 
+                "message": "Empty request body"
+            }), 400
+        
         if request.is_json:
             data = request.json
         else:
-            data = json.loads(request.data.decode('utf-8'))
+            try:
+                data = json.loads(raw_data)
+            except json.JSONDecodeError as e:
+                print(f"[PCD-GEIH JSON ERROR] Invalid JSON: {raw_data[:100]}")
+                return jsonify({
+                    "status": "error", 
+                    "message": f"Invalid JSON: {str(e)}"
+                }), 400
         
         print(f"[PCD-GEIH] Received data: {data}")
         
@@ -237,10 +273,27 @@ def pcd_geih_webhook():
 def standard_webhook():
     """Standart BUY/SELL sinyalleri için endpoint"""
     try:
+        # Veri kontrolü ve parse
+        raw_data = request.data.decode('utf-8')
+        
+        if not raw_data or raw_data.strip() == '':
+            print("[STANDARD WARNING] Empty request body")
+            return jsonify({
+                "status": "error", 
+                "message": "Empty request body"
+            }), 400
+        
         if request.is_json:
             data = request.json
         else:
-            data = json.loads(request.data.decode('utf-8'))
+            try:
+                data = json.loads(raw_data)
+            except json.JSONDecodeError as e:
+                print(f"[STANDARD JSON ERROR] Invalid JSON: {raw_data[:100]}")
+                return jsonify({
+                    "status": "error", 
+                    "message": f"Invalid JSON: {str(e)}"
+                }), 400
         
         print(f"[STANDARD] Received data: {data}")
         
