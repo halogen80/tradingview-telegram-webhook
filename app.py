@@ -242,31 +242,44 @@ def pcd_geih_webhook():
                 }), 400
         
         print(f"[PCD-GEIH] Received data: {data}")
+        print(f"[PCD-GEIH] Signal type: {data.get('signal_type', 'NOT_FOUND')}")
         
         message = format_pcd_geih_signal(data)
         
         # Eğer mesaj None ise (CONFIRMED değilse), işlemi atla
         if message is None:
-            print(f"[PCD-GEIH] Signal filtered: {data.get('signal_type', 'UNKNOWN')}")
+            signal_type = data.get('signal_type', 'UNKNOWN')
+            print(f"[PCD-GEIH] ⚠️ Signal filtered: {signal_type} (Only CONFIRMED signals are sent)")
             return jsonify({
                 "status": "filtered", 
-                "message": "Signal ignored (not CONFIRMED)",
-                "signal_type": data.get('signal_type', 'UNKNOWN')
+                "message": f"Signal ignored (not CONFIRMED). Received: {signal_type}",
+                "signal_type": signal_type,
+                "data_received": data
             }), 200
         
+        print(f"[PCD-GEIH] ✅ CONFIRMED signal detected! Sending to Telegram...")
         response = send_telegram_message(message)
         
         if response.status_code == 200:
+            print(f"[PCD-GEIH] ✅ Telegram message sent successfully!")
             return jsonify({
                 "status": "success", 
                 "message": "CONFIRMED signal sent!",
-                "signal_type": "CONFIRMED"
+                "signal_type": "CONFIRMED",
+                "telegram_response": response.json()
             }), 200
         else:
-            return jsonify({"status": "error", "message": response.text}), 500
+            print(f"[PCD-GEIH] ❌ Telegram API Error: {response.text}")
+            return jsonify({
+                "status": "error", 
+                "message": f"Telegram API error: {response.text}",
+                "telegram_status_code": response.status_code
+            }), 500
             
     except Exception as e:
         print(f"[PCD-GEIH ERROR] {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/standard', methods=['POST'])
